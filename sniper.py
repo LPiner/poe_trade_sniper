@@ -12,7 +12,7 @@ logger = structlog.get_logger()
 
 # Lowest margin in decimal percent that we should alert on.
 #MIN_MARGIN = .15
-MIN_MARGIN = .20
+MIN_MARGIN = .001
 
 # We will ignore items not in this league.
 LEAGUE = 'Bestiary'
