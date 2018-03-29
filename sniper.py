@@ -3,6 +3,7 @@ import structlog
 import time
 import json
 import re
+from poe_trade_sniper.models import POEItem
 from poe_trade_sniper.db import init_sqlite3, add_item_to_db, delete_items_by_stash_id, delete_items_older_than_x_minutes, find_items_by_name, alert_item
 
 logger = structlog.get_logger()
@@ -11,7 +12,7 @@ logger = structlog.get_logger()
 
 # Lowest margin in decimal percent that we should alert on.
 #MIN_MARGIN = .15
-MIN_MARGIN = .01
+MIN_MARGIN = .20
 
 # We will ignore items not in this league.
 LEAGUE = 'Bestiary'
@@ -101,28 +102,29 @@ def find_underpriced_items(item_name: str) -> list:
         return under_priced_items
 
     # get sort by price.
-    items = sorted(items, key=lambda item: item[4])
+    items = sorted(items, key=lambda item: item.price)
     # get the lowest 5
     items = items[:5]
     total = 0
     for item in items:
-        total += item[4]
+        total += item.price
 
     average_price = total/len(items)
 
     price_floor = average_price - (average_price * MIN_MARGIN)
 
     for item in items:
-        if item[4] <= price_floor and not item[7]:
+        item.average_price = average_price
+        if item.price <= price_floor and not item.alerted:
             #logger.warn('Found underpriced item!', item=item)
-            logger.warn(
-                '@%s Hi, I would like to buy [%s] for %s %s in %s. (tab "%s")' % (item[6], item[3], item[4], item[5], item[8], item[2]),
-                predicted_margin=average_price-item[4],
-                average_price=average_price,
-                total_indexed=len(items)
-            )
+            #logger.warn(
+            #    '@%s Hi, I would like to buy [%s] for %s %s in %s. (tab "%s")' % (item[6], item[3], item[4], item[5], item[8], item[2]),
+            #    predicted_margin=average_price-item.price,
+            #    average_price=average_price,
+            #    total_indexed=len(items)
+            #)
             under_priced_items.append(item)
-            alert_item(item[0])
+            alert_item(item.id)
     return under_priced_items
 
 

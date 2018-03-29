@@ -1,5 +1,6 @@
 import sqlite3
 import time
+from poe_trade_sniper.models import POEItem
 
 DATABASE_NAME = 'poe_items.db'
 
@@ -42,7 +43,17 @@ def find_items_by_name(item_name: str):
 
     statement = "SELECT * FROM items where item_name=?"
     c.execute(statement, (item_name, ))
-    return c.fetchall()
+
+    records = c.fetchall()
+    items = []
+    for record in records:
+        items.append(
+            POEItem(id=record[0], stash_name=record[2], name=record[3], price=record[4], price_units=record[5]
+                    , owner_name=record[6], league=record[8], alerted=record[7])
+
+        )
+
+    return items
 
 
 def alert_item(item_id: int):

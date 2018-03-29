@@ -45,9 +45,11 @@ def get_predicted_trades():
     for item in WATCHED_ITEMS:
         items += find_underpriced_items(item)
 
-    print(items)
+    json_items = []
+    for item in items:
+        json_items.append(item.__dict__)
 
-    return jsonify(items=items, item='trash', predicted_margin=1, average_price=1, total_indexed=1, message='hi')
+    return jsonify(items=json_items)
 
 
 @app.route("/")

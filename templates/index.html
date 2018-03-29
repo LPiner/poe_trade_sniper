@@ -15,16 +15,17 @@
 function get_predicted_trades() {
             $.getJSON($SCRIPT_ROOT+"/_get_predicted_trades",
                 function(data) {
-                     $.each([ 52, 97 ], function( index, value ) {
-                          alert( index + ": " + value );
+                     $.each(data.items, function( index, item ) {
+                        console.log(item)
+                        $('#trades > tbody').prepend(
+                        '<tr>'
+                        +'<td>' + item.name +'</td>'
+                        +'<td>' + item.average_price.toString() + '</td>'
+                        +'<td>' + (item.average_price - item.price).toString() + '</td>'
+                        +`<td> @${item.owner_name} Hi, I would like to buy [${item.name}] for ${item.price} ${item.price_units} in ${item.league}. (tab "${item.stash_name}") </td>`
+                        +'</tr>'
+                        );
                      });
-                    $('#trades > tbody').prepend(
-                    '<tr>'
-                    +'<td>' + data.item + '</td>'
-                    +'<td>' + data.average_price + '</td>'
-                    +'</tr>'
-                    );
-                    console.log(data)
                     setTimeout(get_predicted_trades, 1000);
                 });
         }
