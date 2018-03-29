@@ -12,7 +12,7 @@ logger = structlog.get_logger()
 
 # Lowest margin in decimal percent that we should alert on.
 #MIN_MARGIN = .15
-MIN_MARGIN = .001
+MIN_MARGIN = .2
 
 # We will ignore items not in this league.
 
@@ -106,12 +106,12 @@ def find_underpriced_items(item_name: str) -> list:
             items.append(item)
 
     # get sort by price.
-    items = sorted(items, key=lambda item: item.price)
+    items = sorted(items, key=lambda item: item.price_in_chaos)
     # get the lowest 5
     items = items[:5]
     total = 0
     for item in items:
-        total += item.price
+        total += item.price_in_chaos
 
     average_price = total/len(items)
 
@@ -119,7 +119,7 @@ def find_underpriced_items(item_name: str) -> list:
 
     for item in items:
         item.average_price = average_price
-        if item.price <= price_floor and not item.alerted:
+        if item.price_in_chaos <= price_floor and not item.alerted:
             #logger.warn('Found underpriced item!', item=item)
             #logger.warn(
             #    '@%s Hi, I would like to buy [%s] for %s %s in %s. (tab "%s")' % (item[6], item[3], item[4], item[5], item[8], item[2]),
