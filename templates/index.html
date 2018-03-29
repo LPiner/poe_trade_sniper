@@ -20,6 +20,7 @@ function get_predicted_trades() {
                         console.log(item)
                         $('#trades > tbody').prepend(
                         '<tr>'
+                        +'<td>' + (new Date).toTimeString().slice(0,8) + '</td>'
                         +`<td> <a target="_blank" href="http://poe.trade/search?&name=${item.name}&league=${item.league}">${item.name}</a> </td>`
                         +'<td>' + item.average_price.toString() + '</td>'
                         +'<td>' + (item.average_price - item.price).toString().substring(0,4) + '</td>'
@@ -107,6 +108,7 @@ function get_predicted_trades() {
         <table id="trades" style="width:100%">
           <thead>
           <tr>
+            <th>Time Added</th>
             <th>Item</th>
             <th>Average Price</th>
             <th>Predicted Profit</th>

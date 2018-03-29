@@ -4,7 +4,9 @@ import time
 import json
 import re
 from poe_trade_sniper.models import POEItem
+from flask import g
 from poe_trade_sniper.db import init_sqlite3, add_item_to_db, delete_items_by_stash_id, delete_items_older_than_x_minutes, find_items_by_name, alert_item
+from poe_trade_sniper.currency import *
 
 logger = structlog.get_logger()
 
@@ -13,7 +15,6 @@ logger = structlog.get_logger()
 MIN_MARGIN = .001
 
 # We will ignore items not in this league.
-LEAGUE = 'Bestiary'
 
 # Items we want to watch.
 WATCHED_ITEMS = [
@@ -72,32 +73,37 @@ def get_stash_data(change_id: str) -> (str, list):
         return None, []
 
 
-def get_price_in_chaos(note: str) -> float:
-    if 'chaos' not in note:
-        return 0
-    raw_price = re.search(r'\S+ (\S+)', note)
-    try:
-        raw_price = raw_price.group(1)
-    except Exception as e:
-        return 0
+def get_price_data(note: str) -> (str, float):
+    currency = ''
+    units = 0
 
+    note_search = re.search(r'\S+ (\S+) (\S+)', note)
     try:
+        currency = note_search.group(2)
+        currency = convert_currency_abbreviation(currency)
+        raw_price = note_search.group(1)
         if '/' in raw_price:
             numerator, denominator = raw_price.split('/')
-            return float(numerator) / float(denominator)
+            units = float(numerator) / float(denominator)
         else:
-            return float(raw_price)
+            units = float(raw_price)
     except:
-        return 0
+        pass
+    return currency, units
 
 
 def find_underpriced_items(item_name: str) -> list:
 
     under_priced_items = []
 
-    items = find_items_by_name(item_name)
-    if not items or len(items) < 5:
+    search_items = find_items_by_name(item_name)
+    if not search_items or len(search_items) < 5:
         return under_priced_items
+
+    items = []
+    for item in search_items:
+        if item.price_in_chaos > 0:
+            items.append(item)
 
     # get sort by price.
     items = sorted(items, key=lambda item: item.price)
@@ -132,21 +138,21 @@ def get_current_change_id() -> str:
     return page.json()['next_change_id']
 
 
-def parse_items(stash: dict):
+def parse_items(stash: dict, league: str):
     # No invalid accounts
 
     for item in stash['items']:
 
         # Skips items in the wrong league
-        if item['league'] != LEAGUE:
+        if item['league'] != league:
             continue
 
         # Skips items without a price set
         if not item.get('note', None):
             continue
 
-        price = get_price_in_chaos(item['note'])
-        if not price:
+        currency, units = get_price_data(item['note'])
+        if not currency or not units:
             continue
 
         prefix = re.sub(r'.*<<.*>>', '', item['name']).strip()
@@ -158,8 +164,8 @@ def parse_items(stash: dict):
                 stash['id'],
                 stash['stash'],
                 real_name,
-                price,
-                'chaos',
+                units,
+                currency,
                 stash.get('lastCharacterName'),
                 item['league']
             )

@@ -37,6 +37,33 @@ def delete_items_older_than_x_minutes(minutes: int):
     conn.commit()
 
 
+def delete_all_currency_prices():
+    conn = get_connection()
+    c = conn.cursor()
+
+    statement = "DELETE FROM currency_prices"
+    c.execute(statement)
+    conn.commit()
+
+def add_currency_price(currency: str, chaos_price: float):
+    conn = get_connection()
+    c = conn.cursor()
+
+    statement = "INSERT INTO currency_prices(currency, price_in_chaos, timestamp) VALUES(?, ?, ?)"
+    c.execute(statement, (currency, chaos_price, time.time()))
+    conn.commit()
+
+def get_currency_price(currency: str):
+    conn = get_connection()
+    c = conn.cursor()
+
+    statement = "SELECT * FROM currency_prices where currency=?"
+    c.execute(statement, (currency,))
+
+    records = c.fetchone()
+    return records
+
+
 def find_items_by_name(item_name: str):
     conn = get_connection()
     c = conn.cursor()
@@ -79,6 +106,16 @@ def init_sqlite3():
         user_name TEXT,
         alerted BOOL DEFAULT 0,
         league TEXT,
+        timestamp FLOAT
+    )
+    """)
+    conn.commit()
+
+    c.execute("""
+    create table if not exists currency_prices (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        currency TEXT,
+        price_in_chaos FLOAT,
         timestamp FLOAT
     )
     """)
