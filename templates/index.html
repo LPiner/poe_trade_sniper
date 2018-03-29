@@ -8,7 +8,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>POE Margin Sniper</title>
 </head>
 <body>
 
@@ -22,8 +22,8 @@ function get_predicted_trades() {
                         '<tr>'
                         +`<td> <a target="_blank" href="http://poe.trade/search?&name=${item.name}&league=${item.league}">${item.name}</a> </td>`
                         +'<td>' + item.average_price.toString() + '</td>'
-                        +'<td>' + (item.average_price - item.price).toString() + '</td>'
-                        +`<td> @${item.owner_name} Hi, I would like to buy [${item.name}] for ${item.price} ${item.price_units} in ${item.league}. (tab "${item.stash_name}") </td>`
+                        +'<td>' + (item.average_price - item.price).toString().substring(0,4) + '</td>'
+                        +`<td> @${item.owner_name} Hi, I would like to buy >${item.name}< for ${item.price} ${item.price_units} in ${item.league}. (tab "${item.stash_name}") </td>`
                         +'</tr>'
                         );
                      });

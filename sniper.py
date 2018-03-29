@@ -8,8 +8,6 @@ from poe_trade_sniper.db import init_sqlite3, add_item_to_db, delete_items_by_st
 
 logger = structlog.get_logger()
 
-
-
 # Lowest margin in decimal percent that we should alert on.
 #MIN_MARGIN = .15
 MIN_MARGIN = .001
@@ -133,13 +131,6 @@ def get_current_change_id() -> str:
     page = requests.get('http://api.poe.ninja/api/Data/GetStats')
     return page.json()['next_change_id']
 
-# If we dont do this then we have to crawl the ENTIRE FUCKING STASH HISTORY OF POE WHAT THE FUCK.
-change_id = get_current_change_id()
-
-
-if __name__ == '__main__':
-    init_sqlite3()
-
 
 def parse_items(stash: dict):
     # No invalid accounts
@@ -172,28 +163,5 @@ def parse_items(stash: dict):
                 stash.get('lastCharacterName'),
                 item['league']
             )
-
-
-while False:
-    #delete_items_older_than_x_minutes(30)
-    new_change_id, stashes = get_stash_data(change_id=change_id)
-    for stash in stashes:
-        delete_items_by_stash_id(stash['id'])
-
-        if stash['public'] == 'false':
-            continue
-
-        if not stash.get('accountName', ''):
-            continue
-
-        parse_items(stash)
-
-    if new_change_id:
-        change_id = new_change_id
-
-    time.sleep(.25)
-
-    for item in WATCHED_ITEMS:
-        find_underpriced_items(item)
 
 

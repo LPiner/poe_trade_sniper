@@ -33,7 +33,7 @@ def parse_api(change_id=None):
     if new_change_id:
         change_id = new_change_id
 
-    time.sleep(.25)
+    time.sleep(.3)
 
     executor.submit(parse_api, change_id)
 
