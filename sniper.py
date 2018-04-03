@@ -12,7 +12,7 @@ logger = structlog.get_logger()
 
 # Lowest margin in decimal percent that we should alert on.
 #MIN_MARGIN = .15
-MIN_MARGIN = .2
+MIN_MARGIN = .15
 
 # We will ignore items not in this league.
 
@@ -57,7 +57,6 @@ POE_STASH_URI = "http://api.pathofexile.com/public-stash-tabs"
 
 def get_stash_data(change_id: str) -> (str, list):
     #logger.debug("Attempting to pull POE stash data.", change_id=change_id)
-    start_time = time.time()
     request_stash_data = requests.get(POE_STASH_URI, params={'id': change_id})
     #logger.debug("Finished pulling POE stash data.", runtime=time.time()-start_time, uri=request_stash_data.url)
     try:
@@ -65,6 +64,7 @@ def get_stash_data(change_id: str) -> (str, list):
         change_id = data.get('next_change_id', '') 
         if not change_id:
             print(data)
+            print(request_stash_data.headers)
         stashes = data.get('stashes', [])
         #logger.debug("Got change ID and Stashes.", change_id=change_id, stash_count=len(stashes))
         return change_id, stashes

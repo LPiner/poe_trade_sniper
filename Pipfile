@@ -9,7 +9,6 @@ name = "pypi"
 requests = "*"
 structlog = "*"
 colorama = "*"
-"beautifulsoup4" = "*"
 flask = "*"
 
 [requires]

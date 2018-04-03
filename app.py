@@ -7,7 +7,7 @@ from sniper import *
 init_sqlite3()
 
 app = Flask(__name__)
-executor = ThreadPoolExecutor(2)
+executor = ThreadPoolExecutor(max_workers=1)
 cache = SimpleCache()
 LEAGUE = 'Bestiary'
 
@@ -15,19 +15,30 @@ from poe_trade_sniper.currency import *
 from poe_trade_sniper.db import *
 
 def start_scraper():
-    parse_api()
+    while True:
+        parse_api()
 
 
-def parse_api(change_id=None):
+def parse_api():
 
+    start_time = time.time()
     try:
 
+        change_id = get_latest_change_id()
         if not change_id:
             change_id = get_current_change_id()
 
         new_change_id, stashes = get_stash_data(change_id=change_id)
+
+        if new_change_id:
+            add_poe_api_result(change_id, new_change_id, [])
+
+        updated_stashes = []
         for stash in stashes:
-            delete_items_by_stash_id(stash['id'])
+            updated_stashes.append(stash['id'])
+        delete_items_in_stash_id_array(updated_stashes)
+
+        for stash in stashes:
 
             if stash['public'] == 'false':
                 continue
@@ -37,14 +48,12 @@ def parse_api(change_id=None):
 
             parse_items(stash, LEAGUE)
 
-        if new_change_id:
-            change_id = new_change_id
-
     except Exception as e:
         logger.warn('Parser failed with error.', error=e)
-    time.sleep(.4)
-    executor.submit(parse_api, change_id)
 
+    while time.time() - start_time < .5:
+        time.sleep(.01)
+    print(time.time() - start_time)
 
 @app.route('/_get_predicted_trades')
 def get_predicted_trades():
@@ -68,9 +77,9 @@ def index():
 
 
 if __name__ == '__main__':
-    start_scraper()
+    executor.submit(start_scraper)
     rates = get_currency_rates(LEAGUE)
     for rate in rates:
         add_currency_price(rate['currencyTypeName'], rate['chaosEquivalent'])
     add_currency_price('Chaos Orb', 1)
-    app.run(debug=1)
+    app.run()

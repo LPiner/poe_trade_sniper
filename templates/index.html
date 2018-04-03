@@ -14,22 +14,27 @@
 
 <script type=text/javascript>
 function get_predicted_trades() {
-            $.getJSON($SCRIPT_ROOT+"/_get_predicted_trades",
-                function(data) {
-                     $.each(data.items, function( index, item ) {
-                        console.log(item)
-                        $('#trades > tbody').prepend(
-                        '<tr>'
-                        +'<td>' + (new Date).toTimeString().slice(0,8) + '</td>'
-                        +`<td> <a target="_blank" href="http://poe.trade/search?&name=${item.name}&league=${item.league}">${item.name}</a> </td>`
-                        +'<td>' + item.average_price.toString() + '</td>'
-                        +'<td>' + (item.average_price - item.price).toString().substring(0,4) + '</td>'
-                        +`<td> @${item.owner_name} Hi, I would like to buy >${item.name}< for ${item.price} ${item.price_units} in ${item.league}. (tab "${item.stash_name}") </td>`
-                        +'</tr>'
-                        );
-                     });
-                    setTimeout(get_predicted_trades, 1000);
-                });
+            try {
+                $.getJSON($SCRIPT_ROOT+"/_get_predicted_trades",
+                    function(data) {
+                         $.each(data.items, function( index, item ) {
+                            console.log(item)
+                            $('#trades > tbody').prepend(
+                            '<tr>'
+                            +'<td>' + (new Date).toTimeString().slice(0,8) + '</td>'
+                            +`<td> <a target="_blank" href="http://poe.trade/search?league=${item.league}&name=${item.name}&online=x">${item.name}</a> </td>`
+                            +'<td>' + item.average_price.toString() + '</td>'
+                            +'<td>' + (item.average_price - item.price_in_chaos).toString().substring(0,4) + '</td>'
+                            +`<td> @${item.owner_name} Hi, I would like to buy >${item.name}< for ${item.price} ${item.price_units} in ${item.league}. (tab "${item.stash_name}") </td>`
+                            +'</tr>'
+                            );
+                         });
+                    });
+            }
+            catch(error){
+                console.log(error)
+           }
+            setTimeout(get_predicted_trades, 1000);
         }
         setTimeout(get_predicted_trades, 1000);
 </script>

@@ -1,5 +1,6 @@
 import sqlite3
 import time
+import json
 from poe_trade_sniper.models import POEItem
 
 DATABASE_NAME = 'poe_items.db'
@@ -27,6 +28,16 @@ def delete_items_by_stash_id(stash_id: str):
     c.execute(statement)
     conn.commit()
 
+def delete_items_in_stash_id_array(stash_ids: list):
+    conn = get_connection()
+    c = conn.cursor()
+
+    statement = "DELETE FROM items WHERE 'stash_id' IN ({seq})".format(
+        seq=','.join(['?']*len(stash_ids)))
+    c.execute(statement, stash_ids)
+    conn.commit()
+
+
 
 def delete_items_older_than_x_minutes(minutes: int):
     conn = get_connection()
@@ -45,6 +56,7 @@ def delete_all_currency_prices():
     c.execute(statement)
     conn.commit()
 
+
 def add_currency_price(currency: str, chaos_price: float):
     conn = get_connection()
     c = conn.cursor()
@@ -52,6 +64,7 @@ def add_currency_price(currency: str, chaos_price: float):
     statement = "INSERT INTO currency_prices(currency, price_in_chaos, timestamp) VALUES(?, ?, ?)"
     c.execute(statement, (currency, chaos_price, time.time()))
     conn.commit()
+
 
 def get_currency_price(currency: str):
     conn = get_connection()
@@ -81,6 +94,28 @@ def find_items_by_name(item_name: str):
         )
 
     return items
+
+
+def add_poe_api_result(change_id: str, next_change_id: str, stash_data: list):
+    conn = get_connection()
+    c = conn.cursor()
+
+    statement = "INSERT INTO poe_api_results(change_id, next_change_id, stash_data, timestamp) VALUES(?, ?, ?, ?)"
+    c.execute(statement, (change_id, next_change_id, json.dumps(stash_data), time.time()))
+    conn.commit()
+
+
+def get_latest_change_id() -> str:
+    conn = get_connection()
+    c = conn.cursor()
+
+    statement = "SELECT next_change_id FROM poe_api_results WHERE id = (SELECT MAX(ID) FROM poe_api_results);"
+    c.execute(statement)
+    record = c.fetchone()
+    if not record:
+        return ''
+    return record[0]
+
 
 
 def alert_item(item_id: int):
@@ -116,6 +151,17 @@ def init_sqlite3():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         currency TEXT,
         price_in_chaos FLOAT,
+        timestamp FLOAT
+    )
+    """)
+    conn.commit()
+
+    c.execute("""
+    create table if not exists poe_api_results (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        change_id TEXT,
+        next_change_id TEXT,
+        stash_data TExt,
         timestamp FLOAT
     )
     """)
