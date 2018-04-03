@@ -1,57 +1,17 @@
-import requests
-import structlog
-import time
-import json
 import re
-from poe_trade_sniper.models import POEItem
-from flask import g
 from poe_trade_sniper.db import init_sqlite3, add_item_to_db, delete_items_by_stash_id, delete_items_older_than_x_minutes, find_items_by_name, alert_item
 from poe_trade_sniper.currency import *
+from poe_trade_sniper.finders import get_possible_items
 
 logger = structlog.get_logger()
 
 # Lowest margin in decimal percent that we should alert on.
 #MIN_MARGIN = .15
-MIN_MARGIN = .15
+MIN_MARGIN = .1
+
+WATCHED_ITEMS = get_possible_items()
 
 # We will ignore items not in this league.
-
-# Items we want to watch.
-WATCHED_ITEMS = [
-        "Monstrous Treasure",
-        "The Jeweller's Touch",
-        "Pools of Wealth",
-        "Vaal Winds",
-        "The Unbreathing Queen V",
-        "Flesh of the Beast",
-        "The Feral Lord III",
-        "A Dishonourable Death",
-        "The Feral Lord V",
-        "Lost in the Pages",
-        "The Unbreathing Queen IV",
-        "Darktongue's Shriek",
-        "The Plaguemaw V",
-        "Twice Enchanted",
-        #"Fire and Brimstone", Price Fixed
-        "The Spark and the Flame",
-        "Mawr Blaidd",
-        "Hunter's Reward",
-        "Abandoned Wealth",
-        "The Wolven King's Bite",
-        "The Iron Bard",
-        "The King's Heart",
-        "The World Eater",
-        "Wealth and Power",
-        "Pride Before the Fall",
-        "The Dragon's Heart",
-        "The Last One Standing",
-        "The Wind",
-        "The Wolf",
-        "The Queen",
-        "The Saint's Treasure",
-        "The Artist",
-        "The Enlightened",
-        ]
 
 POE_STASH_URI = "http://api.pathofexile.com/public-stash-tabs"
 
@@ -169,5 +129,7 @@ def parse_items(stash: dict, league: str):
                 stash.get('lastCharacterName'),
                 item['league']
             )
+
+
 
 

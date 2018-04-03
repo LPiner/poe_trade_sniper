@@ -11,8 +11,10 @@ executor = ThreadPoolExecutor(max_workers=1)
 cache = SimpleCache()
 LEAGUE = 'Bestiary'
 
+
 from poe_trade_sniper.currency import *
 from poe_trade_sniper.db import *
+
 
 def start_scraper():
     while True:
@@ -58,11 +60,12 @@ def parse_api():
 @app.route('/_get_predicted_trades')
 def get_predicted_trades():
 
-
     items = []
 
+    start_time = time.time()
     for item in WATCHED_ITEMS:
         items += find_underpriced_items(item)
+    logger.info('Predicted trades', time_taken=time.time()-start_time, total_items_found=len(items))
 
     json_items = []
     for item in items:
@@ -79,6 +82,7 @@ def index():
 if __name__ == '__main__':
     executor.submit(start_scraper)
     rates = get_currency_rates(LEAGUE)
+    delete_all_currency_prices()
     for rate in rates:
         add_currency_price(rate['currencyTypeName'], rate['chaosEquivalent'])
     add_currency_price('Chaos Orb', 1)
