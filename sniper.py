@@ -115,6 +115,10 @@ def parse_items(stash: dict, league: str):
         if not currency or not units:
             continue
 
+        chaos_price = convert_currency_to_chaos(currency, units)
+        if not chaos_price:
+            continue
+
         prefix = re.sub(r'.*<<.*>>', '', item['name']).strip()
         suffix = re.sub(r'.*<<.*>>', '', item['typeLine']).strip()
         real_name = (prefix + ' ' + suffix).strip()
@@ -126,6 +130,7 @@ def parse_items(stash: dict, league: str):
                 real_name,
                 units,
                 currency,
+                chaos_price,
                 stash.get('lastCharacterName'),
                 item['league']
             )

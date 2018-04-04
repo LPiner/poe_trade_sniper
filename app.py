@@ -51,7 +51,9 @@ def parse_api():
             parse_items(stash, LEAGUE)
 
     except Exception as e:
-        logger.warn('Parser failed with error.', error=e)
+        import traceback
+        print(traceback.print_exc())
+        logger.warn('Parser failed with error.', error=e.__traceback__.tb_lineno)
 
     while time.time() - start_time < .5:
         time.sleep(.01)

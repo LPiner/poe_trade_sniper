@@ -32,7 +32,7 @@ def convert_currency_to_chaos(currency: str, amount: float) -> int:
     conversion = 0
     c = get_currency_price(currency)
     if c:
-        conversion = c[2] * amount
+        conversion = c[1] * amount
     if not c or not conversion:
         logger.warn('Was unable to convert currency.', currency=currency, amount=amount, conversion=conversion, price_entry=c)
     return conversion
