@@ -65,7 +65,7 @@ def get_predicted_trades():
     items = []
 
     start_time = time.time()
-    for item in WATCHED_ITEMS:
+    for item in get_all_watched_items():
         items += find_underpriced_items(item)
     logger.info('Predicted trades', time_taken=time.time()-start_time, total_items_found=len(items))
 
@@ -82,10 +82,11 @@ def index():
 
 
 if __name__ == '__main__':
-    executor.submit(start_scraper)
+    get_possible_items()
     rates = get_currency_rates(LEAGUE)
     delete_all_currency_prices()
     for rate in rates:
         add_currency_price(rate['currencyTypeName'], rate['chaosEquivalent'])
     add_currency_price('Chaos Orb', 1)
+    executor.submit(start_scraper)
     app.run()

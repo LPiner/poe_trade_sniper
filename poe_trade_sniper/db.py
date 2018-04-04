@@ -77,6 +77,39 @@ def get_currency_price(currency: str):
     return records
 
 
+def add_watched_item(item: str, average_chaos_price: float):
+    conn = get_connection()
+    c = conn.cursor()
+
+    statement = "INSERT INTO watched_items(item_name, average_chaos_price) VALUES(?, ?)"
+    c.execute(statement, (item, average_chaos_price))
+    conn.commit()
+
+
+def get_all_watched_items():
+    conn = get_connection()
+    c = conn.cursor()
+
+    statement = "SELECT * FROM watched_items"
+    c.execute(statement)
+
+    records = c.fetchall()
+    items = []
+    for record in records:
+        items.append(record[0])
+
+    return items
+
+
+def delete_all_watched_items():
+    conn = get_connection()
+    c = conn.cursor()
+
+    statement = "DELETE FROM watched_items"
+    c.execute(statement)
+    conn.commit()
+
+
 def find_items_by_name(item_name: str):
     conn = get_connection()
     c = conn.cursor()
@@ -117,7 +150,6 @@ def get_latest_change_id() -> str:
     return record[0]
 
 
-
 def alert_item(item_id: int):
     conn = get_connection()
     c = conn.cursor()
@@ -156,10 +188,19 @@ def init_sqlite3():
     conn.commit()
 
     c.execute("""
+    create table if not exists watched_items (
+        item_name TEXT,
+        average_chaos_price FLOAT,
+        count INT
+    )
+    """)
+    conn.commit()
+
+    c.execute("""
     create table if not exists poe_api_results (
         change_id TEXT,
         next_change_id TEXT,
-        stash_data TExt,
+        stash_data TEXT,
         timestamp FLOAT
     )
     """)
